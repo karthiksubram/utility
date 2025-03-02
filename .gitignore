@@ -4,3 +4,7 @@
 .vscode/
 *.classpath
 *.project
+/target/
+/src/frontend/dist/
+/src/frontend/node_modules/
+/src/frontend/.angular/
