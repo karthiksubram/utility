@@ -1,0 +1,16 @@
+mat-grid-list {
+  width: 100%;
+}
+
+mat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: space-around;
+}

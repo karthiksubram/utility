@@ -1,0 +1,20 @@
+<button mat-raised-button color="primary" (click)="registerApp()">Register New App</button>
+<mat-grid-list cols="3" rowHeight="200px">
+  <mat-grid-tile *ngFor="let app of apps">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ app.name }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+<!--        <img src="assets/java-icon.png" alt="Java Icon" width="50" height="50">-->
+        <mat-icon style="font-size: 50px; color: #045b63;">coffee</mat-icon>
+        <p>Status: {{ app.status }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button *ngIf="app.status !== 'running'" mat-button color="primary" (click)="startApp(app.id)">Start</button>
+        <button *ngIf="app.status === 'running'" mat-button color="accent" (click)="stopApp(app.id)">Stop</button>
+        <button mat-button color="warn" (click)="deleteApp(app.id)">Delete</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-grid-tile>
+</mat-grid-list>

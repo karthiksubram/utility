@@ -1,0 +1,2 @@
+1000,Pet App, Pet Clinic Example project,binaries/spring-petclinic-3.4.0-SNAPSHOT.jar
+1001,2nd Pet App, New example,binaries/spring-petclinic-3.4.0-SNAPSHOT.jar
