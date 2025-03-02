@@ -10,11 +10,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import {MatIconModule} from "@angular/material/icon";
+import {MatListModule} from "@angular/material/list";
 
 @Component({
   selector: 'app-modules-list',
   standalone: true,
-  imports: [NgIf, NgFor, MatButtonModule, MatCardModule, MatGridListModule, MatSnackBarModule, MatIconModule],
+  imports: [NgIf, NgFor, MatButtonModule, MatCardModule, MatGridListModule, MatSnackBarModule, MatIconModule,MatListModule],
   templateUrl: './modules-list.component.html',
   styleUrl: './modules-list.component.css'
 })
