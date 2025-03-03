@@ -1,11 +1,6 @@
 <button mat-raised-button color="primary" (click)="registerApp()">Register New App</button>
 
-<!--<mat-grid-list cols="2" rowHeight="2:1" [gutterSize]="'10px'">-->
-<!--  <mat-grid-tile>1</mat-grid-tile>-->
-<!--  <mat-grid-tile>2</mat-grid-tile>-->
-<!--  <mat-grid-tile>3</mat-grid-tile>-->
-<!--  <mat-grid-tile>4</mat-grid-tile>-->
-<!--</mat-grid-list>-->
+
 
 <mat-grid-list cols="2" rowHeight="300px" [gutterSize]="'20px'">
   <mat-grid-tile *ngFor="let app of apps">
@@ -14,17 +9,15 @@
       <mat-card-header>
         <!--        <div mat-card-avatar class="example-header-image"></div>-->
         <div mat-card-avatar class="icon-avatar">
-          <mat-icon>work</mat-icon>
+          <mat-icon>workflow</mat-icon>
         </div>
-        <mat-card-title>Shiba Inu</mat-card-title>
-        <mat-card-subtitle>Dog Breed</mat-card-subtitle>
+        <mat-card-title>Batch Neurology</mat-card-title>
+        <mat-card-subtitle>autosys</mat-card-subtitle>
       </mat-card-header>
       <!--      <img mat-card-image src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">-->
       <mat-card-content>
         <p>
-          The Shiba Inu is the smallest of the six original and distinct spitz breeds of dog from Japan.
-          A small, agile dog that copes very well with mountainous terrain, the Shiba Inu was originally
-          bred for hunting.
+          Efficient scheduling, execution, and management of batch jobs related to neurological data processing or any application requiring sequential and parallel job execution. It ensures optimized workflows, error handling, and smooth data processing across interconnected jobs.
         </p>
       </mat-card-content>
       <mat-card-actions>
