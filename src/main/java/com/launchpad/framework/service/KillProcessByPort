@@ -1,0 +1,99 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
+public class KillProcessByPort {
+    public static void main(String[] args) {
+        int port = 8080; // Change this to your required port
+
+        try {
+            List<String> pids = getProcessIds(port);
+
+            if (!pids.isEmpty()) {
+                System.out.println("Processes running on port " + port + " have PIDs: " + pids);
+                killProcesses(pids);
+            } else {
+                System.out.println("No process found running on port " + port);
+            }
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Function to find PIDs of processes using a specific port
+    private static List<String> getProcessIds(int port) {
+        List<String> pids = new ArrayList<>();
+        String command;
+
+        try {
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                // Windows command to find PID using netstat
+                command = "cmd.exe /c netstat -ano | findstr :" + port;
+            } else {
+                // Linux/macOS command to find PID using lsof
+                command = "sh -c lsof -i :" + port;
+            }
+
+            System.out.println("Running command: " + command);
+            ProcessBuilder processBuilder = new ProcessBuilder(command.split(" "));
+            Process process = processBuilder.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println("Found process: " + line);
+
+                if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                    // Windows: Extract the last column as PID
+                    String[] parts = line.trim().split("\\s+");
+                    if (parts.length >= 5) {
+                        pids.add(parts[parts.length - 1]);
+                    }
+                } else {
+                    // Linux/macOS: Extract the second column as PID
+                    String[] parts = line.trim().split("\\s+");
+                    if (parts.length > 1) {
+                        pids.add(parts[1]);
+                    }
+                }
+            }
+
+            if (pids.isEmpty()) {
+                System.out.println("No active process found on port " + port);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error while fetching process IDs: " + e.getMessage());
+        }
+
+        return pids;
+    }
+
+    // Function to kill all found processes
+    private static void killProcesses(List<String> pids) {
+        for (String pid : pids) {
+            String command;
+            try {
+                if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                    // Windows: Kill process by PID
+                    command = "taskkill /F /PID " + pid;
+                } else {
+                    // Linux/macOS: Kill process by PID
+                    command = "kill -9 " + pid;
+                }
+
+                System.out.println("Terminating process with PID: " + pid);
+                ProcessBuilder processBuilder = new ProcessBuilder(command.split(" "));
+                Process process = processBuilder.start();
+                process.waitFor(); // Ensure the process is terminated before proceeding
+
+                System.out.println("Successfully killed process with PID: " + pid);
+
+            } catch (Exception e) {
+                System.err.println("Failed to terminate process with PID " + pid + ": " + e.getMessage());
+            }
+        }
+    }
+}
