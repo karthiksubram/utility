@@ -1,0 +1,221 @@
+import java.time.Instant;
+import java.util.List;
+
+public class ApiResponse<T> {
+    private Instant timestamp;
+    private int status;
+    private String message;
+    private T data;
+    private List<String> errors;
+
+    public ApiResponse(int status, String message, T data, List<String> errors) {
+        this.timestamp = Instant.now();
+        this.status = status;
+        this.message = message;
+        this.data = data;
+        this.errors = errors;
+    }
+
+    // Getters and Setters
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public List<String> getErrors() {
+        return errors;
+    }
+}
+
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import java.util.Collections;
+
+public class ApiResponseUtil {
+
+    public static <T> ResponseEntity<ApiResponse<T>> success(T data, String message) {
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), message, data, Collections.emptyList()));
+    }
+
+    public static ResponseEntity<ApiResponse<Object>> error(HttpStatus status, String message, List<String> errors) {
+        return ResponseEntity.status(status)
+                .body(new ApiResponse<>(status.value(), message, null, errors));
+    }
+}
+
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/items")
+public class ItemController {
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Item>> getItemById(@PathVariable Long id) {
+        Item item = new Item(id, "Sample Item", "This is a sample item");
+        return ApiResponseUtil.success(item, "Item retrieved successfully");
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<Object>> createItem(@RequestBody Item item) {
+        if (item.getName() == null || item.getName().isEmpty()) {
+            return ApiResponseUtil.error(HttpStatus.BAD_REQUEST, "Validation Failed", List.of("Name is required"));
+        }
+        return ApiResponseUtil.success(item, "Item created successfully");
+    }
+}
+
+
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Collections;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
+        return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", Collections.singletonList(ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBadRequest(IllegalArgumentException ex) {
+        return ApiResponseUtil.error(HttpStatus.BAD_REQUEST, "Invalid Request", Collections.singletonList(ex.getMessage()));
+    }
+}
+
+
+
+export interface ApiResponse<T> {
+  timestamp: string;
+  status: number;
+  message: string;
+  data: T;
+  errors: string[];
+}
+
+
+export interface Item {
+  id: number;
+  name: string;
+  description: string;
+}
+
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { ApiResponse } from '../models/api-response.model';
+import { Item } from '../models/item.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ItemService {
+  private apiUrl = 'http://localhost:8080/api/items'; // Change as per your backend URL
+
+  constructor(private http: HttpClient) {}
+
+  // GET: Fetch an item by ID
+  getItemById(id: number): Observable<Item> {
+    return this.http.get<ApiResponse<Item>>(`${this.apiUrl}/${id}`).pipe(
+      map(response => {
+        if (response.status === 200 && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Unknown Error');
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  // POST: Create an item
+  createItem(item: Item): Observable<Item> {
+    return this.http.post<ApiResponse<Item>>(this.apiUrl, item).pipe(
+      map(response => {
+        if (response.status === 200 && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to create item');
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  // Handle HTTP Errors
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'An unknown error occurred';
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Client-side error: ${error.error.message}`;
+    } else if (error.error && error.error.message) {
+      // API Error
+      errorMessage = `Server error: ${error.error.message}`;
+    }
+    return throwError(() => new Error(errorMessage));
+  }
+}
+
+
+import { Component, OnInit } from '@angular/core';
+import { ItemService } from '../services/item.service';
+import { Item } from '../models/item.model';
+
+@Component({
+  selector: 'app-item',
+  templateUrl: './item.component.html',
+  styleUrls: ['./item.component.css']
+})
+export class ItemComponent implements OnInit {
+  item: Item | null = null;
+  errorMessage: string | null = null;
+
+  constructor(private itemService: ItemService) {}
+
+  ngOnInit(): void {
+    this.fetchItem(1); // Example: Fetch item with ID 1
+  }
+
+  fetchItem(id: number): void {
+    this.itemService.getItemById(id).subscribe({
+      next: (data) => {
+        this.item = data;
+        this.errorMessage = null;
+      },
+      error: (error) => {
+        this.errorMessage = error.message;
+        this.item = null;
+      }
+    });
+  }
+}
+
+
+<div *ngIf="item">
+  <h2>Item Details</h2>
+  <p><strong>ID:</strong> {{ item.id }}</p>
+  <p><strong>Name:</strong> {{ item.name }}</p>
+  <p><strong>Description:</strong> {{ item.description }}</p>
+</div>
+
+<div *ngIf="errorMessage" class="error">
+  <p>{{ errorMessage }}</p>
+</div>
